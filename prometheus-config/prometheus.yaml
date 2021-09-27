@@ -1,0 +1,44 @@
+global:
+  evaluation_interval: 1m
+  scrape_interval: 30s
+  scrape_timeout: 5s
+rule_files: null
+scrape_configs:
+- consul_sd_configs:
+  - server: 10.102.176.239
+    services:
+    - node-exporter
+  job_name: consul
+  metric_relabel_configs:
+  - action: keep
+    regex: node_boot_time_seconds$|node_cpu_seconds_total$|node_filefd_allocated$|node_filesystem_avail_bytes$|node_filesystem_avail_bytes_total$|node_filesystem_size_bytes$|node_filesystem_size_bytes_total$|node_filesystem_usage_rate_total$|node_load1$|node_load15$|node_load5$|node_memory_Buffers_bytes$|node_memory_Cached_bytes$|node_memory_MemFree_bytes$|node_memory_MemTotal_bytes$|node_netstat_Tcp_CurrEstab$|node_network_receive_bytes_per_second_total$|node_network_transmit_bytes_per_second_total$|node_sockstat_TCP_alloc$|node_sockstat_TCP_inuse$|node_sockstat_TCP_tw$|node_status_capacity_cpu_usage_rate$|node_status_capacity_memory_usage_rate$|node_disk_reads_completed_total$|node_disk_writes_completed_total$|node_disk_io_now$|node_disk_read_bytes_total$|node_disk_written_bytes_total$|node_disk_io_time_seconds_total$|node_disk_io_time_weighted_seconds_total$|node_disk_read_time_seconds_total$|node_disk_write_time_seconds_total$|node_network_receive_bytes_total$|node_network_transmit_bytes_total$
+    source_labels:
+    - __name__
+  relabel_configs:
+  - action: replace
+    regex: (.+)(?::\d+)
+    replacement: $1
+    separator: ;
+    source_labels:
+    - __address__
+    target_label: node_ip
+  - action: replace
+    regex: (.*)
+    replacement: $1
+    separator: ;
+    source_labels:
+    - __meta_consul_service
+    target_label: job
+- consul_sd_configs:
+  - server: http://192.168.0.78:31000
+    services:
+    - cadviosr-exporter
+  job_name: cadviosr-exporter
+  relabel_configs:
+  - action: replace
+    regex: (.+)(?::\d+)
+    replacement: $1
+    separator: ;
+    source_labels:
+    - __address__
+    target_label: node_ip
