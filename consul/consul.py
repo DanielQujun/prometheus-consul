@@ -32,6 +32,12 @@ del_service_template = '''
   "ServiceID": "{jobname}-{node_address}-{target_port}"
 }}
 '''
+del_node_template = '''
+{{
+  "Node": "{node_address}",
+  "Datacenter": "dc1"
+}}
+'''
 
 
 class Consul:
@@ -59,3 +65,9 @@ class Consul:
         content_header = {"Content-type": "application/json"}
         ret = requests.get(url=self.consulUrl+self.list_api + jobname, headers=content_header)
         print(json.dumps(ret.json(), sort_keys=True, indent=4, separators=(',', ':')))
+
+    def del_node(self, node_address):
+        content_header = {"Content-type": "application/json"}
+        put_data = del_node_template.format(node_address=node_address)
+        ret = requests.put(url=self.consulUrl+self.deregister_api, data=put_data, headers=content_header)
+        print(ret.status_code)

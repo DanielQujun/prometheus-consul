@@ -30,12 +30,9 @@ flags.DEFINE_string('port', "", u"服务的端口")
 
 def main(argv):
     del argv
-    if not FLAGS.job:
-        print("need job!")
-        exit()
 
     if FLAGS.o == "add_service":
-        if FLAGS.ip == "" or FLAGS.port == "":
+        if FLAGS.job == "" or FLAGS.ip == "" or FLAGS.port == "":
             print("need jobname, ip, port!")
             exit()
         c = consul.Consul(consul_url)
@@ -48,12 +45,27 @@ def main(argv):
             p.update_prometheus_yaml(FLAGS.job)
             p.update_configmap()
     elif FLAGS.o == "del_service":
+        if FLAGS.job == "" or FLAGS.ip == "" or FLAGS.port == "":
+            print("need jobname, ip, port!")
+            exit()
         c = consul.Consul(consul_url)
         c.del_service(FLAGS.job, FLAGS.ip, FLAGS.port)
+    elif FLAGS.o == "del_node":
+        if FLAGS.ip == "":
+            print("need node ip!")
+            exit()
+        c = consul.Consul(consul_url)
+        c.del_node(FLAGS.ip)
     elif FLAGS.o == "list_service":
+        if FLAGS.job == "":
+            print("need jobname!")
+            exit()
         c = consul.Consul(consul_url)
         c.list_service(FLAGS.job)
     elif FLAGS.o == "add_job":
+        if FLAGS.job == "":
+            print("need jobname")
+            exit()
         p = prometheus.Prometheus(consul_url, prometheus_config_path, prometheus_yaml_path, prometheus_configmap_name)
         if p.check_job_exist(FLAGS.job):
             print("job: %s exist in config, skip~" % FLAGS.job)
@@ -62,6 +74,9 @@ def main(argv):
             p.add_job_to_prometheus_yaml(FLAGS.job)
             p.update_configmap()
     elif FLAGS.o == "del_job":
+        if FLAGS.job == "":
+            print("need jobname!")
+            exit()
         p = prometheus.Prometheus(consul_url, prometheus_config_path, prometheus_yaml_path, prometheus_configmap_name)
         need_update_configmap = p.del_job_from_prometheus_yaml(FLAGS.job)
         if need_update_configmap:
