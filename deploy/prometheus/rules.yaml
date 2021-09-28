@@ -1,0 +1,7 @@
+apiVersion: v1
+data:
+  monitoring-prometheus-k8s-rules.yaml: ""
+kind: ConfigMap
+metadata:
+  name: steamer-prometheus-rule-files
+  namespace: kube-system

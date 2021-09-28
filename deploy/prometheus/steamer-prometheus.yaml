@@ -1,0 +1,118 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  annotations:
+  labels:
+    prometheus: k8s
+  name: steamer-prometheus
+  namespace: kube-system
+spec:
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: steamer-prometheus
+      prometheus: k8s
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: steamer-prometheus
+        namespace: kube-system
+        prometheus: k8s
+    spec:
+      containers:
+      - command:
+        - prom-election
+        - --election=prom-election
+        - --http=0.0.0.0:9091
+        - --use-cluster-credentials=true
+        - --reload-webhook-url=http://localhost:9090/-/reload
+        - --stop-webhook-url=http://localhost:9090/-/quit
+        - --plugin-path=/bin/start.sh
+        - --watch-dirs=/etc/prometheus/master,/etc/prometheus/slave,/etc/prometheus/rulefiles
+        env:
+        - name: EXTRA_PROMETHEUS_ARGS
+          value: --log.level=debug
+        - name: PROMETHEUS_RELOAD_TIMEOUT
+          value: "120"
+        - name: RULES_CONFIGMAP
+          value: steamer-prometheus-rule-files
+        - name: MASTER_CONFIGMAP
+          value: steamer-prometheus-master-config
+        - name: SLAVE_CONFIGMAP
+          value: steamer-prometheus-slave-config
+        - name: SCHEM
+          value: https
+        - name: KUBERNETES_SERVICE_HOST
+          value: 192.168.0.78
+        - name: KUBERNETES_SERVICE_PORT
+          value: "6443"
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: status.podIP
+        image: harbor.tiduyun.com/steamer-package/prometheus:v2.30.0
+        imagePullPolicy: Always
+        livenessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - pidof prometheus > /dev/null; exit $?
+          failureThreshold: 3
+          initialDelaySeconds: 120
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 6
+        name: prometheus
+        resources:
+          limits:
+            memory: 4G
+          requests:
+            memory: 400Mi
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /var/lib/prometheus
+          name: prometheus-k8s-db
+      dnsPolicy: None
+      dnsConfig:
+          nameservers:
+          - 10.96.0.10
+          options:
+          - name: ndots
+            value: "2"
+          searches:
+          - kube-system.svc.cluster.local
+          - cluster.local
+          - svc.cluster.local
+          - cluster.local
+          - local
+      hostNetwork: true
+      nodeSelector:
+        zone: master
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      serviceAccount: prometheus
+      serviceAccountName: prometheus
+      terminationGracePeriodSeconds: 30
+      tolerations:
+      - effect: NoSchedule
+        key: schedule_policy
+        operator: Equal
+        value: no_schedule
+      - effect: NoExecute
+        key: schedule_policy
+        operator: Equal
+        value: no_execute
+      volumes:
+      - hostPath:
+          path: /srv/steamer/prometheus/
+          type: ""
+        name: prometheus-k8s-db
+  updateStrategy:
+    rollingUpdate:
+      maxUnavailable: 1
+    type: RollingUpdate

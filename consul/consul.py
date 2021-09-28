@@ -16,7 +16,7 @@ add_service_template = '''
     "external-probe": "true"
   }},
   "Service": {{
-    "ID": "{jobname}-{node_address}-{target_port}",
+    "ID": "{jobname}-{node_address}:{target_port}",
     "Service": "{jobname}",
     "Tags": ["{jobname}", "prometheus"],
     "Port": {target_port}
@@ -29,7 +29,7 @@ del_service_template = '''
 {{
   "Node": "{node_address}",
   "Datacenter": "dc1",
-  "ServiceID": "{jobname}-{node_address}-{target_port}"
+  "ServiceID": "{jobname}-{node_address}:{target_port}"
 }}
 '''
 del_node_template = '''
@@ -44,7 +44,8 @@ class Consul:
 
     register_api = "/v1/catalog/register"
     deregister_api = "/v1/catalog/deregister"
-    list_api = "/v1/catalog/service/"
+    list_service_api = "/v1/catalog/service/"
+    list_node_api = "/v1/catalog/nodes"
 
     def __init__(self, consulurl):
         self.consulUrl = consulurl
@@ -63,7 +64,7 @@ class Consul:
 
     def list_service(self, jobname):
         content_header = {"Content-type": "application/json"}
-        ret = requests.get(url=self.consulUrl+self.list_api + jobname, headers=content_header)
+        ret = requests.get(url=self.consulUrl+self.list_service_api + jobname, headers=content_header)
         print(json.dumps(ret.json(), sort_keys=True, indent=4, separators=(',', ':')))
 
     def del_node(self, node_address):
@@ -71,3 +72,8 @@ class Consul:
         put_data = del_node_template.format(node_address=node_address)
         ret = requests.put(url=self.consulUrl+self.deregister_api, data=put_data, headers=content_header)
         print(ret.status_code)
+
+    def list_node(self):
+        content_header = {"Content-type": "application/json"}
+        ret = requests.get(url=self.consulUrl+self.list_node_api, headers=content_header)
+        print(json.dumps(ret.json(), sort_keys=True, indent=4, separators=(',', ':')))

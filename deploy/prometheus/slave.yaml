@@ -1,0 +1,14 @@
+apiVersion: v1
+data:
+  prometheus.yaml: |-
+    global:
+      scrape_interval:     10s
+      evaluation_interval: 10s
+    remote_read:
+      - url: http://192.168.0.220:7211/api/v1/prom/remote/read
+        remote_timeout: 1m
+        read_recent: true
+kind: ConfigMap
+metadata:
+  name: steamer-prometheus-slave-config
+  namespace: kube-system
