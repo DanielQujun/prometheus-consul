@@ -4,4 +4,3 @@
 # datetime:9/27/21 11:55 AM
 
 from .prometheus_template import *
-from .update_prometheus_configmap import *
