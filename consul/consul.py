@@ -5,8 +5,6 @@
 import requests
 import json
 
-
-
 add_service_template = '''
 {{
   "Node": "{node_address}",
