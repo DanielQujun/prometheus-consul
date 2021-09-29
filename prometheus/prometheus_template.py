@@ -31,7 +31,7 @@ class Prometheus:
     def check_job_exist_from_cm(self, job_name):
         get_cm = "kubectl get cm {configmapname} -n kube-system -o yaml ". \
             format(configmapname=self.prometheus_configmap_name)
-        ret = subprocess.run(get_cm,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,encoding="utf-8",timeout=1)
+        ret = subprocess.run(get_cm,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,encoding="utf-8",timeout=5)
         if ret.returncode == 0:
             prometheus_cm_yaml = yaml.load(ret.stdout, Loader=yaml.FullLoader)
             prometheus_file_yaml = yaml.load(prometheus_cm_yaml["data"]["prometheus.yaml"], Loader=yaml.FullLoader)
@@ -76,7 +76,7 @@ class Prometheus:
         save_old_cm = "kubectl get cm {configmapname} -n kube-system -o yaml >{old_cm_file}". \
             format(old_cm_file=old_cm_file,
                    configmapname=self.prometheus_configmap_name)
-        ret = subprocess.run(save_old_cm,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,encoding="utf-8",timeout=1)
+        ret = subprocess.run(save_old_cm,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,encoding="utf-8",timeout=5)
         if ret.returncode == 0:
             print("success:", ret)
         else:
@@ -93,11 +93,19 @@ class Prometheus:
             print("bad operation for prometheus cm!")
             return
         prometheus_cm_yaml["data"]["prometheus.yaml"] = prometheus_file_yaml_string
+
+        # remove resourceVersion and last-applied-configuration
+        if prometheus_cm_yaml.get("metadata") and prometheus_cm_yaml["metadata"].get("annotations") and \
+           prometheus_cm_yaml["metadata"]["annotations"].get("kubectl.kubernetes.io/last-applied-configuration"):
+            del prometheus_cm_yaml["metadata"]["annotations"]["kubectl.kubernetes.io/last-applied-configuration"]
+
+        del prometheus_cm_yaml["metadata"]["resourceVersion"]
+
         with open(new_cm_file, "w") as f:
             yaml.dump(prometheus_cm_yaml, f, sort_keys=True, default_flow_style=False)
 
         update_cmd = "kubectl apply -n kube-system -f {new_cm_file}".format(new_cm_file=new_cm_file)
-        ret = subprocess.run(update_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8", timeout=1)
+        ret = subprocess.run(update_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8", timeout=5)
         if ret.returncode == 0:
             print("success:",ret)
         else:
