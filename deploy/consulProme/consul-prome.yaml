@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: consulprome
+  name: consulprome
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: consulprome
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: consulprome
+    spec:
+      volumes:
+        - name: prometheus-config
+          hostPath:
+            path: /srv/steamer/consulProme/prometheus-config
+        - name: nodes-files
+          hostPath:
+            path: /srv/steamer/consulProme/host-files
+        - name: kube-config
+          hostPath:
+            path: /root/.kube
+      containers:
+      - image: harbor.tiduyun.com/qujun/consulprome:v1
+        name: consulprome
+        command: ["bash"]
+        tty: true
+        volumeMounts:
+          - name: prometheus-config
+            mountPath: /consulProme/prometheus-config
+          - name: nodes-files
+            mountPath: /consulProme/nodes-files
+          - name: kube-config
+            mountPath: /root/.kube
+      nodeSelector:
+        zone: master
