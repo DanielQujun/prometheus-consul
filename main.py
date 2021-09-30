@@ -8,7 +8,7 @@ from absl import flags
 
 pwd_path = os.path.abspath(os.path.dirname(__file__))
 
-consul_url = os.environ.get("CONSUL_URL", "http://192.168.0.78:32087")
+consul_url = os.environ.get("CONSUL_HTTP_ADDR", "http://192.168.0.78:32087")
 
 prometheus_config_path = os.path.join(pwd_path, "./prometheus-config")
 prometheus_yaml_path = os.path.join(pwd_path, "./prometheus-config/prometheus.yaml")
