@@ -14,5 +14,8 @@ On the other side, there are few blogs or tutorial to guides us to run best prac
 it's not convenience for Operations Engineers to operator the consul's api directly. So I write this little tool
 try to make our work more efficiently.
 
+## background
+[中文](docs/prometheus-with-consul.md)
+
 ## TODO
 - [ ] replace kubectl to python requests.
