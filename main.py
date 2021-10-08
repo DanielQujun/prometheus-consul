@@ -22,7 +22,7 @@ flags.DEFINE_string('o', "list_service", u"add_service: 添加服务,需要jobna
                                   u"list_service: 查询某个jobname下面注册了哪些节点;\n\n"
                                   u"add_job: 添加prometheus job;\n\n"
                                   u"del_job: 删除prometheus job;\n\n"
-                                  u"list_node: 删除prometheus job;\n\n")
+                                  u"list_node: 列出consul里注册的节点;\n\n")
 flags.DEFINE_string('job', "", u"添加服务在哪个job之下，或给prometheus添加的job名")
 flags.DEFINE_string('ip', "", u"服务的ip")
 flags.DEFINE_string('port', "", u"服务的端口")
