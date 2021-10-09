@@ -7,6 +7,33 @@ data:
       scrape_timeout: 5s
     rule_files: null
     scrape_configs:
+    - job_name: steamer-prometheus
+      scrape_interval: 15s
+      kubernetes_sd_configs:
+      - role: pod
+        namespaces:
+          names:
+          - kube-system
+        api_server: 'https://192.168.0.78:6443'
+        authorization:
+          type: Bearer
+          credentials_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+        tls_config:
+          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+          insecure_skip_verify: false
+        follow_redirects: true
+      relabel_configs:
+      - source_labels: [__meta_kubernetes_namespace, __meta_kubernetes_pod_label_app]
+        separator: ;
+        regex: kube-system;steamer-prometheus
+        replacement: $1
+        action: keep
+      - source_labels: [__meta_kubernetes_pod_ip]
+        separator: ;
+        regex: (.*)
+        target_label: __address__
+        replacement: $1:9090
+        action: replace
     - consul_sd_configs:
       - server: prometheus-consul-server.consul:8500
         services:

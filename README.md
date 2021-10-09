@@ -11,7 +11,7 @@ This is the role for `consul_sd_configs` which makes Prometheus dynamic discover
 consul. The `file_sd_configs` should take into consideration, but it's not suitable for large-scale services.
 
 On the other side, there are few blogs or tutorial for the best practice, furthermore,
-it's not convenience for Operations Engineers to operator the consul's api directly. for making our work more efficiently, I write this little tool.
+it's not convenience for Operations Engineers to interact with the consul's API directly. for making our work more efficiently, I write this little tool.
 
 ## Background
 [中文](docs/prometheus-with-consul.md)
